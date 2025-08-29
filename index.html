@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meitei Mayek Keyboard - Virtual Typing App</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Meetei+Mayek&family=Inter:wght@400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: #718096;
+            font-size: 1rem;
+        }
+        
+        .container {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .text-area-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .text-area-label {
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #2d3748;
+            font-size: 1.1rem;
+        }
+        
+        #textOutput {
+            width: 100%;
+            min-height: 200px;
+            padding: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: 'Noto Sans Meetei Mayek', sans-serif;
+            font-size: 24px;
+            line-height: 1.6;
+            resize: vertical;
+            background: #fafafa;
+            transition: border-color 0.3s ease;
+        }
+        
+        #textOutput:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .keyboard-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .keyboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .keyboard-title {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.2rem;
+        }
+        
+        .shift-indicator {
+            padding: 6px 12px;
+            background: #f7fafc;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #4a5568;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .shift-indicator.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .virtual-keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .keyboard-row {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+        }
+        
+        .key {
+            min-width: 50px;
+            height: 50px;
+            background: linear-gradient(145deg, #ffffff, #f0f4f8);
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-family: 'Noto Sans Meetei Mayek', sans-serif;
+            font-size: 18px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            user-select: none;
+            position: relative;
+        }
+        
+        .key:hover {
+            background: linear-gradient(145deg, #f0f4f8, #e2e8f0);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .key:active {
+            transform: translateY(0);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .key.pressed {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .key.special {
+            background: linear-gradient(145deg, #4a5568, #2d3748);
+            color: white;
+            font-size: 14px;
+            min-width: 80px;
+        }
+        
+        .key.special:hover {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+        }
+        
+        .key.space {
+            min-width: 300px;
+        }
+        
+        .key-hint {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 10px;
+            color: #718096;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #718096;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+        
+        .footer {
+            background: rgba(45, 55, 72, 0.9);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .footer a {
+            color: #90cdf4;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .key {
+                min-width: 35px;
+                height: 35px;
+                font-size: 14px;
+            }
+            
+            .key.space {
+                min-width: 200px;
+            }
+            
+            .controls {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ꯃꯤꯇꯩ ꯃꯌꯦꯛ (Meitei Mayek) Keyboard</h1>
+        <p>Virtual Keyboard Application for PC</p>
+    </div>
+    
+    <div class="container">
+        <div class="text-area-section">
+            <div class="text-area-label">Text Output</div>
+            <textarea id="textOutput" placeholder="Start typing with the virtual keyboard below or use your physical keyboard..."></textarea>
+            <div class="controls">
+                <button class="btn btn-primary" onclick="copyText()">📋 Copy Text</button>
+                <button class="btn btn-secondary" onclick="clearText()">🗑️ Clear</button>
+                <button class="btn btn-secondary" onclick="saveText()">💾 Save as TXT</button>
+                <button class="btn btn-secondary" onclick="loadFromFile()">📁 Load File</button>
+                <input type="file" id="fileInput" accept=".txt" style="display: none;" onchange="handleFileLoad(event)">
+            </div>
+        </div>
+        
+        <div class="keyboard-section">
+            <div class="keyboard-header">
+                <div class="keyboard-title">Virtual Keyboard</div>
+                <div class="shift-indicator" id="shiftIndicator">Shift: OFF</div>
+            </div>
+            
+            <div class="virtual-keyboard" id="keyboard">
+                <!-- Keyboard will be generated by JavaScript -->
+            </div>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="charCount">0</div>
+                    <div class="stat-label">Characters</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="wordCount">0</div>
+                    <div class="stat-label">Words</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="meiteiCount">0</div>
+                    <div class="stat-label">Meitei Characters</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>&copy; 2025 Meitei Mayek Virtual Keyboard | 
+        <a href="https://github.com/yourusername/meitei-keyboard" target="_blank">View on GitHub</a></p>
+    </div>
+
+    <script>
+        // Keyboard mapping
+        const keyMap = {
+            'q': { normal: 'ꯦ', shift: 'ꯩ' },
+            'w': { normal: 'ꯋ', shift: 'W' },
+            'e': { normal: 'ꯏ', shift: 'ꯢ' },
+            'r': { normal: 'ꯔ', shift: 'R' },
+            't': { normal: 'ꯇ', shift: 'ꯠ' },
+            'y': { normal: 'ꯌ', shift: 'Y' },
+            'u': { normal: 'ꯎ', shift: 'ꯨ' },
+            'i': { normal: 'ꯤ', shift: 'I' },
+            'o': { normal: 'ꯣ', shift: 'ꯧ' },
+            'p': { normal: 'ꯄ', shift: 'ꯞ' },
+            'a': { normal: 'ꯑ', shift: 'ꯥ' },
+            's': { normal: 'ꯁ', shift: 'S' },
+            'd': { normal: 'ꯗ', shift: 'ꯙ' },
+            'f': { normal: 'ꯐ', shift: 'F' },
+            'g': { normal: 'ꯒ', shift: 'ꯘ' },
+            'h': { normal: 'ꯍ', shift: 'ꯊ' },
+            'j': { normal: 'ꯖ', shift: 'ꯓ' },
+            'k': { normal: 'ꯀ', shift: 'ꯛ' },
+            'l': { normal: 'ꯂ', shift: 'ꯜ' },
+            'z': { normal: 'ꯉ', shift: 'ꯡ' },
+            'x': { normal: '꯫', shift: '꯭' },
+            'c': { normal: 'ꯆ', shift: 'C' },
+            'v': { normal: 'ꯈ', shift: 'ꯪ' },
+            'b': { normal: 'ꯕ', shift: 'ꯚ' },
+            'n': { normal: 'ꯅ', shift: 'ꯟ' },
+            'm': { normal: 'ꯃ', shift: 'ꯝ' },
+            '1': { normal: '꯱', shift: '!' },
+            '2': { normal: '꯲', shift: '@' },
+            '3': { normal: '꯳', shift: '#' },
+            '4': { normal: '꯴', shift: '$' },
+            '5': { normal: '꯵', shift: '%' },
+            '6': { normal: '꯶', shift: '^' },
+            '7': { normal: '꯷', shift: '&' },
+            '8': { normal: '꯸', shift: '*' },
+            '9': { normal: '꯹', shift: '(' },
+            '0': { normal: '꯰', shift: ')' }
+        };
+
+        // Keyboard layout
+        const keyboardLayout = [
+            ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+            ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+            ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+            ['shift', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'backspace'],
+            ['space']
+        ];
+
+        let isShiftPressed = false;
+        let stats = { chars: 0, words: 0, meitei: 0 };
+
+        // Initialize keyboard
+        function createKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            keyboard.innerHTML = '';
+
+            keyboardLayout.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'keyboard-row';
+
+                row.forEach(key => {
+                    const keyDiv = document.createElement('div');
+                    keyDiv.className = 'key';
+                    keyDiv.dataset.key = key;
+
+                    if (key === 'shift' || key === 'backspace') {
+                        keyDiv.className += ' special';
+                    }
+                    if (key === 'space') {
+                        keyDiv.className += ' space';
+                    }
+
+                    // Set key content
+                    if (key === 'shift') {
+                        keyDiv.textContent = 'Shift';
+                    } else if (key === 'backspace') {
+                        keyDiv.textContent = '⌫';
+                    } else if (key === 'space') {
+                        keyDiv.textContent = 'Space';
+                    } else {
+                        const mapping = keyMap[key];
+                        if (mapping) {
+                            keyDiv.textContent = isShiftPressed ? mapping.shift : mapping.normal;
+                            if (mapping.normal !== mapping.shift) {
+                                const hint = document.createElement('div');
+                                hint.className = 'key-hint';
+                                hint.textContent = isShiftPressed ? mapping.normal : mapping.shift;
+                                keyDiv.appendChild(hint);
+                            }
+                        } else {
+                            keyDiv.textContent = key;
+                        }
+                    }
+
+                    keyDiv.addEventListener('click', () => handleKeyClick(key));
+                    rowDiv.appendChild(keyDiv);
+                });
+
+                keyboard.appendChild(rowDiv);
+            });
+        }
+
+        // Handle key clicks
+        function handleKeyClick(key) {
+            const keyElement = document.querySelector(`[data-key="${key}"]`);
+            keyElement.classList.add('pressed');
+            setTimeout(() => keyElement.classList.remove('pressed'), 150);
+
+            if (key === 'shift') {
+                toggleShift();
+            } else if (key === 'backspace') {
+                backspace();
+            } else if (key === 'space') {
+                insertText(' ');
+            } else {
+                const mapping = keyMap[key];
+                if (mapping) {
+                    const char = isShiftPressed ? mapping.shift : mapping.normal;
+                    insertText(char);
+                }
+            }
+        }
+
+        // Handle physical keyboard
+        document.addEventListener('keydown', (e) => {
+            if (e.target.id === 'textOutput') {
+                const key = e.key.toLowerCase();
+                
+                if (e.key === 'Shift') {
+                    if (!isShiftPressed) {
+                        toggleShift();
+                    }
+                    return;
+                }
+
+                if (keyMap[key] && !e.ctrlKey && !e.altKey) {
+                    e.preventDefault();
+                    const mapping = keyMap[key];
+                    const char = (e.shiftKey || isShiftPressed) ? mapping.shift : mapping.normal;
+                    insertText(char);
+                }
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'Shift' && isShiftPressed) {
+                toggleShift();
+            }
+        });
+
+        // Toggle shift
+        function toggleShift() {
+            isShiftPressed = !isShiftPressed;
+            const indicator = document.getElementById('shiftIndicator');
+            indicator.textContent = `Shift: ${isShiftPressed ? 'ON' : 'OFF'}`;
+            indicator.classList.toggle('active', isShiftPressed);
+            createKeyboard();
+        }
+
+        // Insert text
+        function insertText(text) {
+            const textArea = document.getElementById('textOutput');
+            const start = textArea.selectionStart;
+            const end = textArea.selectionEnd;
+            const before = textArea.value.substring(0, start);
+            const after = textArea.value.substring(end);
+            
+            textArea.value = before + text + after;
+            textArea.selectionStart = textArea.selectionEnd = start + text.length;
+            textArea.focus();
+            
+            updateStats();
+        }
+
+        // Backspace
+        function backspace() {
+            const textArea = document.getElementById('textOutput');
+            const start = textArea.selectionStart;
+            const end = textArea.selectionEnd;
+            
+            if (start !== end) {
+                // Delete selection
+                textArea.value = textArea.value.substring(0, start) + textArea.value.substring(end);
+                textArea.selectionStart = textArea.selectionEnd = start;
+            } else if (start > 0) {
+                // Delete one character
+                textArea.value = textArea.value.substring(0, start - 1) + textArea.value.substring(start);
+                textArea.selectionStart = textArea.selectionEnd = start - 1;
+            }
+            
+            textArea.focus();
+            updateStats();
+        }
+
+        // Update statistics
+        function updateStats() {
+            const text = document.getElementById('textOutput').value;
+            const chars = text.length;
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            const meiteiChars = (text.match(/[\u{AAE0}-\u{AAFF}]/gu) || []).length;
+            
+            document.getElementById('charCount').textContent = chars;
+            document.getElementById('wordCount').textContent = words;
+            document.getElementById('meiteiCount').textContent = meiteiChars;
+        }
+
+        // Utility functions
+        function copyText() {
+            const text = document.getElementById('textOutput').value;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Text copied to clipboard!');
+            });
+        }
+
+        function clearText() {
+            if (confirm('Are you sure you want to clear all text?')) {
+                document.getElementById('textOutput').value = '';
+                updateStats();
+            }
+        }
+
+        function saveText() {
+            const text = document.getElementById('textOutput').value;
+            if (!text.trim()) {
+                alert('No text to save!');
+                return;
+            }
+            
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `meitei-text-${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function loadFromFile() {
+            document.getElementById('fileInput').click();
+        }
+
+        function handleFileLoad(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('textOutput').value = e.target.result;
+                updateStats();
+            };
+            reader.readAsText(file);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createKeyboard();
+            updateStats();
+            
+            // Auto-update stats when text changes
+            document.getElementById('textOutput').addEventListener('input', updateStats);
+        });
+    </script>
+</body>
+</html>
